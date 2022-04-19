@@ -1,40 +1,27 @@
-import {
-  visitAsync,
-  toJSX,
-  CH_CODE_CONFIG_PLACEHOLDER,
-} from "./unist-utils"
-import { extractStepsInfo } from "./steps"
-import { getPresetConfig } from "./preview"
-import { JsxNode, SuperNode } from "./nodes"
+import { visitAsync, toJSX, CH_CODE_CONFIG_PLACEHOLDER } from "./unist-utils";
+import { extractStepsInfo } from "./steps";
+import { getPresetConfig } from "./preview";
+import { JsxNode, SuperNode } from "./nodes";
 
 export async function transformSpotlights(
   tree: SuperNode,
   config: { theme: any }
 ) {
-  await visitAsync(
-    tree,
-    "mdxJsxFlowElement",
-    async (node: JsxNode) => {
-      if (node.name === "CH.Spotlight") {
-        await transformSpotlight(node, config)
-      }
+  await visitAsync(tree, "mdxJsxFlowElement", async (node) => {
+    if ((node as unknown as JsxNode).name === "CH.Spotlight") {
+      await transformSpotlight(node as unknown as JsxNode, config);
     }
-  )
+  });
 }
 
-async function transformSpotlight(
-  node: JsxNode,
-  { theme }: { theme: any }
-) {
+async function transformSpotlight(node: JsxNode, { theme }: { theme: any }) {
   const editorSteps = await extractStepsInfo(
     node,
     { theme },
     "merge steps with header"
-  )
+  );
 
-  const presetConfig = await getPresetConfig(
-    node.attributes
-  )
+  const presetConfig = await getPresetConfig(node.attributes);
 
   toJSX(node, {
     props: {
@@ -43,5 +30,5 @@ async function transformSpotlight(
       presetConfig,
     },
     appendProps: true,
-  })
+  });
 }

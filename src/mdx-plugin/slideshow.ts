@@ -1,39 +1,26 @@
-import {
-  visitAsync,
-  toJSX,
-  CH_CODE_CONFIG_PLACEHOLDER,
-} from "./unist-utils"
-import { extractStepsInfo } from "./steps"
-import { getPresetConfig } from "./preview"
-import { JsxNode, SuperNode } from "./nodes"
+import { visitAsync, toJSX, CH_CODE_CONFIG_PLACEHOLDER } from "./unist-utils";
+import { extractStepsInfo } from "./steps";
+import { getPresetConfig } from "./preview";
+import { JsxNode, SuperNode } from "./nodes";
 
 export async function transformSlideshows(
   tree: SuperNode,
   config: { theme: any }
 ) {
-  await visitAsync(
-    tree,
-    "mdxJsxFlowElement",
-    async (node: JsxNode) => {
-      if (node.name === "CH.Slideshow") {
-        await transformSlideshow(node, config)
-      }
+  await visitAsync(tree, "mdxJsxFlowElement", async (node) => {
+    if ((node as unknown as JsxNode).name === "CH.Slideshow") {
+      await transformSlideshow(node, config);
     }
-  )
+  });
 }
-async function transformSlideshow(
-  node: SuperNode,
-  { theme }: { theme: any }
-) {
+async function transformSlideshow(node: SuperNode, { theme }: { theme: any }) {
   const editorSteps = await extractStepsInfo(
     node,
     { theme },
     "merge step with previous"
-  )
+  );
 
-  const presetConfig = await getPresetConfig(
-    (node as any).attributes
-  )
+  const presetConfig = await getPresetConfig((node as any).attributes);
 
   toJSX(node, {
     props: {
@@ -42,5 +29,5 @@ async function transformSlideshow(
       presetConfig,
     },
     appendProps: true,
-  })
+  });
 }

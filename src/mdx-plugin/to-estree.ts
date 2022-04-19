@@ -1,30 +1,30 @@
-import { Expression } from "estree"
-import isPlainObject from "is-plain-obj"
-import { annotationsMap } from "../mdx-client/annotations"
-import unified from "unified"
-import remarkRehype from "remark-rehype"
-import toEstree from "hast-util-to-estree"
-import { Node, Parent } from "unist"
+import { Expression } from "estree";
+import isPlainObject from "is-plain-obj";
+import { annotationsMap } from "../mdx-client/annotations";
+import unified from "unified";
+import remarkRehype from "remark-rehype";
+import toEstree from "hast-util-to-estree";
+import { Node, Parent } from "unist";
 
 // forked from https://github.com/remcohaszing/estree-util-value-to-estree/blob/main/src/index.ts
 
 // https://github.com/DefinitelyTyped/DefinitelyTyped/issues/34960#issuecomment-576906058
 declare const URL: typeof globalThis extends {
-  URL: infer URLCtor
+  URL: infer URLCtor;
 }
   ? URLCtor
-  : typeof import("url").URL
+  : typeof import("url").URL;
 declare const URLSearchParams: typeof globalThis extends {
-  URL: infer URLSearchParamsCtor
+  URL: infer URLSearchParamsCtor;
 }
   ? URLSearchParamsCtor
-  : typeof import("url").URLSearchParams
+  : typeof import("url").URLSearchParams;
 
 export interface Options {
   /**
    * If true, treat objects that have a prototype as plain objects.
    */
-  instanceAsObject?: boolean
+  instanceAsObject?: boolean;
 }
 
 /**
@@ -39,19 +39,19 @@ export function valueToEstree(
   options: Options = {}
 ): Expression {
   if (value === undefined) {
-    return { type: "Identifier", name: "undefined" }
+    return { type: "Identifier", name: "undefined" };
   }
   if (value == null) {
-    return { type: "Literal", value: null, raw: "null" }
+    return { type: "Literal", value: null, raw: "null" };
   }
   if (value === Number.POSITIVE_INFINITY) {
-    return { type: "Identifier", name: "Infinity" }
+    return { type: "Identifier", name: "Infinity" };
   }
   if (Number.isNaN(value)) {
-    return { type: "Identifier", name: "NaN" }
+    return { type: "Identifier", name: "NaN" };
   }
   if (typeof value === "boolean") {
-    return { type: "Literal", value, raw: String(value) }
+    return { type: "Literal", value, raw: String(value) };
   }
   if (typeof value === "bigint") {
     return value >= 0
@@ -66,7 +66,7 @@ export function valueToEstree(
           operator: "-",
           prefix: true,
           argument: valueToEstree(-value, options),
-        }
+        };
   }
   if (typeof value === "number") {
     return value >= 0
@@ -76,20 +76,17 @@ export function valueToEstree(
           operator: "-",
           prefix: true,
           argument: valueToEstree(-value, options),
-        }
+        };
   }
   if (typeof value === "string") {
     return {
       type: "Literal",
       value,
       raw: JSON.stringify(value),
-    }
+    };
   }
   if (typeof value === "symbol") {
-    if (
-      value.description &&
-      value === Symbol.for(value.description)
-    ) {
+    if (value.description && value === Symbol.for(value.description)) {
       return {
         type: "CallExpression",
         optional: false,
@@ -100,25 +97,19 @@ export function valueToEstree(
           object: { type: "Identifier", name: "Symbol" },
           property: { type: "Identifier", name: "for" },
         },
-        arguments: [
-          valueToEstree(value.description, options),
-        ],
-      }
+        arguments: [valueToEstree(value.description, options)],
+      };
     }
     throw new TypeError(
-      `Only global symbols are supported, got: ${String(
-        value
-      )}`
-    )
+      `Only global symbols are supported, got: ${String(value)}`
+    );
   }
   if (Array.isArray(value)) {
-    const elements: (Expression | null)[] = []
+    const elements: (Expression | null)[] = [];
     for (let i = 0; i < value.length; i += 1) {
-      elements.push(
-        i in value ? valueToEstree(value[i], options) : null
-      )
+      elements.push(i in value ? valueToEstree(value[i], options) : null);
     }
-    return { type: "ArrayExpression", elements }
+    return { type: "ArrayExpression", elements };
   }
   if (value instanceof RegExp) {
     return {
@@ -126,23 +117,21 @@ export function valueToEstree(
       value,
       raw: String(value),
       regex: { pattern: value.source, flags: value.flags },
-    }
+    };
   }
   if (value instanceof Date) {
     return {
       type: "NewExpression",
       callee: { type: "Identifier", name: "Date" },
       arguments: [valueToEstree(value.getTime(), options)],
-    }
+    };
   }
   if (value instanceof Map) {
     return {
       type: "NewExpression",
       callee: { type: "Identifier", name: "Map" },
-      arguments: [
-        valueToEstree([...value.entries()], options),
-      ],
-    }
+      arguments: [valueToEstree([...value.entries()], options)],
+    };
   }
   if (
     value instanceof BigInt64Array ||
@@ -165,12 +154,9 @@ export function valueToEstree(
         name: value.constructor.name,
       },
       arguments: [valueToEstree([...value], options)],
-    }
+    };
   }
-  if (
-    value instanceof URL ||
-    value instanceof URLSearchParams
-  ) {
+  if (value instanceof URL || value instanceof URLSearchParams) {
     return {
       type: "NewExpression",
       callee: {
@@ -178,47 +164,40 @@ export function valueToEstree(
         name: value.constructor.name,
       },
       arguments: [valueToEstree(String(value), options)],
-    }
+    };
   }
   if (options.instanceAsObject || isPlainObject(value)) {
     if ((value as any)?.name === MDX_CHILDREN) {
-      const tree = { ...(value as any) }
-      tree.name = null
-      return (mdastToEstree(tree) as any).body[0].expression
+      const tree = { ...(value as any) };
+      tree.name = null;
+      return (mdastToEstree(tree) as any).body[0].expression;
     }
 
-    if (
-      (value as any)?.type ===
-      "mdxJsxAttributeValueExpression"
-    ) {
-      return (value as any).data.estree.body[0].expression
+    if ((value as any)?.type === "mdxJsxAttributeValueExpression") {
+      return (value as any).data.estree.body[0].expression;
     }
 
     return {
       type: "ObjectExpression",
-      properties: Object.entries(value).map(
-        ([name, val]) => ({
-          type: "Property",
-          method: false,
-          shorthand: false,
-          computed: false,
-          kind: "init",
-          key: valueToEstree(name, options),
-          value: valueToEstree(val, options),
-        })
-      ),
-    }
+      properties: Object.entries(value).map(([name, val]) => ({
+        type: "Property",
+        method: false,
+        shorthand: false,
+        computed: false,
+        kind: "init",
+        key: valueToEstree(name, options),
+        value: valueToEstree(val, options),
+      })),
+    };
   }
 
-  const isAnnotation = Object.values(
-    annotationsMap
-  ).includes(value as any)
+  const isAnnotation = Object.values(annotationsMap).includes(value as any);
 
   // code hike annotations patch
   if (isAnnotation) {
     const identifier = Object.keys(annotationsMap).find(
-      key => annotationsMap[key] === value
-    )!
+      (key) => annotationsMap[key] === value
+    )!;
     return {
       type: "MemberExpression",
       object: {
@@ -240,10 +219,10 @@ export function valueToEstree(
       },
       computed: false,
       optional: false,
-    }
+    };
   }
 
-  throw new TypeError(`Unsupported value: ${String(value)}`)
+  throw new TypeError(`Unsupported value: ${String(value)}`);
 }
 
 export function mdastToEstree(node: Node) {
@@ -253,29 +232,29 @@ export function mdastToEstree(node: Node) {
     "mdxJsxTextElement",
     "mdxTextExpression",
     "mdxjsEsm",
-  ]
+  ];
   const changedTree = unified()
     .use(remarkRehype, {
       allowDangerousHtml: true,
       passThrough: nodeTypes,
     })
     .use(rehypeRecma as any)
-    .runSync(node)
+    .runSync(node);
 
-  return changedTree
+  return changedTree;
 }
 
 function rehypeRecma() {
-  return (tree: any) => (toEstree as any)(tree)
+  return (tree: any) => (toEstree as any)(tree);
 }
 
-const MDX_CHILDREN = "MDX_CHILDREN"
+const MDX_CHILDREN = "MDX_CHILDREN";
 
 export function wrapChildren(children: Node[]) {
   const tree = {
     type: "mdxJsxFlowElement",
     children,
     name: MDX_CHILDREN,
-  }
-  return tree
+  };
+  return tree;
 }
