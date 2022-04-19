@@ -1,5 +1,12 @@
 export const articleList = [
   {
+    date: "2022年4月19日",
+    title: "站内博客DEMO",
+    desc: "结合MDX的代码滚动博客",
+    type: "博客-DEMO",
+    href: "/scrollycoding-demo",
+  },
+  {
     date: "2020年8月20日",
     title: "vue3-tsx",
     desc: "一个Vue3与TS的模版仓库",

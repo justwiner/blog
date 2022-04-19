@@ -14,3 +14,11 @@ a {
 * {
   box-sizing: border-box;
 }
+
+.ch-scrollycoding-content {
+  margin-right: 20vw;
+}
+
+.ch-scrollycoding-sticker .ch-editor-frame>div:last-child>div{
+  background-color: #202226 !important;
+}

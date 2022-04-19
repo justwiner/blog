@@ -1,11 +1,16 @@
 import type { NextPage } from "next";
 import styles from "../styles/Home.module.css";
 import Image from "next/image";
+import Head from "next/head";
 import { articleList, userInfo } from "../mock/const";
 
 const Home: NextPage = () => {
   return (
     <div className={styles.container}>
+      <Head>
+        <title>{userInfo.title}</title>
+        <meta name="viewport" content="initial-scale=1.0, width=device-width" />
+      </Head>
       <div className={styles.left}>
         <div className={styles["avator-container"]}>
           <Image
